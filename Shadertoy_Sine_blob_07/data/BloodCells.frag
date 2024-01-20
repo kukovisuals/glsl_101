@@ -22,26 +22,52 @@ uniform float iSampleRate;           // image/buffer/sound    The sound sample r
 uniform float iChannelTime[4];       // image/buffer          Time for channel (if video or sound), in seconds
 uniform vec3  iChannelResolution[4]; // image/buffer/sound    Input texture resolution for each channel
 
+// Random number generator
+float rand(vec2 co) {
+    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
 
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
-{
+void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = fragCoord / iResolution.xy;
-    
-    // vec3 col = vec3(0.1, 0.1, uv.y);
 
-    // // Output to screen
-    // fragColor = vec4(col, 1.0);
+    // Define the number of points in the diagram
+    const int numPoints = 40;
+    vec2 points[numPoints];
+    for (int i = 0; i < numPoints; i++) {
+        // Generate random points uniformly across the screen
+        points[i] = vec2(rand(vec2(i, i + 0.1)), rand(vec2(i + 0.2, i + 0.3)));
+    }
 
-    // Base color (biased towards blue)
-    vec3 baseColor = vec3(0.5, 0.5, 1.0);
+    // Find the two closest points in Cartesian space
+    float minDist = 1.0;
+    float secondMinDist = 1.0;
+    int closestPoint = 0;
+    for (int i = 0; i < numPoints; i++) {
+        float dist = distance(uv, points[i]);
+        if (dist < minDist) {
+            secondMinDist = minDist;
+            minDist = dist;
+            closestPoint = i;
+        } else if (dist < secondMinDist) {
+            secondMinDist = dist;
+        }
+    }
 
-    // Create a vertical gradient
-    float gradient = uv.y; // 0 at bottom, 1 at top
+    // Determine if the pixel is on an edge
+    bool onEdge = abs(minDist - secondMinDist) < 0.005; // Edge threshold
 
-    // Apply the gradient to the color
-    vec3 col = mix(baseColor, vec3(gradient, gradient, 1.0), 0.5);
+    // Assign color
+    vec3 col;
+    if (onEdge) {
+        col = vec3(1.0, 0.0, 0.0); // Red for edges
+    } else {
+        // Assign a color based on the closest point (customize as needed)
+        col = vec3(0.1, 0.1, 0.1);
+    }
 
-    // Output to screen
     fragColor = vec4(col, 1.0);
 }
+
+
+

@@ -22,25 +22,24 @@ uniform float iSampleRate;           // image/buffer/sound    The sound sample r
 uniform float iChannelTime[4];       // image/buffer          Time for channel (if video or sound), in seconds
 uniform vec3  iChannelResolution[4]; // image/buffer/sound    Input texture resolution for each channel
 
-
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = fragCoord / iResolution.xy;
-    
-    // vec3 col = vec3(0.1, 0.1, uv.y);
 
-    // // Output to screen
-    // fragColor = vec4(col, 1.0);
+    // Define the center of the gradient (middle of the screen)
+    vec2 center = vec2(0.5, 0.5);
 
-    // Base color (biased towards blue)
-    vec3 baseColor = vec3(0.5, 0.5, 1.0);
+    // Calculate the distance from the current pixel to the center
+    float distance = length(uv - center);
 
-    // Create a vertical gradient
-    float gradient = uv.y; // 0 at bottom, 1 at top
+    // Normalize the distance based on the maximum possible distance (from center to corner)
+    float maxDistance = length(vec2(0.5, 0.5));
+    float normalizedDistance = distance / maxDistance;
 
-    // Apply the gradient to the color
-    vec3 col = mix(baseColor, vec3(gradient, gradient, 1.0), 0.5);
+    // Create a color that changes from the center outward
+    // The color transitions from blue in the center to red at the edges
+    vec3 col = vec3(0.1, 0.1, normalizedDistance);
 
     // Output to screen
     fragColor = vec4(col, 1.0);
